@@ -1,8 +1,56 @@
 """Implementation of randomized sample-based Apriori.
 """
+import random
 
-"""Implementation of the Apriori algorithm for frequent item set mining.
-"""
+def randomized_apriori(file_path: str, t: int, p: float, f: bool) -> dict[frozenset[str], int]:
+    """Execute randomized apriori on the specified file using a frequency threshold t.
+
+    Args:
+        file_path (str): The input file containing one basket per line where each item is separated by a space.
+        t (int): Frequency threshold t, item sets with a lower freq will be discarded.
+        p (float): Sampling probability for each line of data.
+        f (bool): If true, an extra pass over the data is performed to remove false positives.
+
+    Returns:
+        dict[frozenset[str], int]: A dictionary that has the frequent item sets as keys 
+            with their frequencies as values.
+    """
+    # First, we create a sample of the data set: That is, we read the data set once, sample each basket with probability p
+    # and append it to a list stored in main memory.
+    sample: list[str] = 0
+
+    with open(file_path) as file:
+        for i, line in enumerate(file):
+            if random.random() < p:
+                sample.append(line)
+
+    # now run apriori on the sample
+    output: dict[frozenset[str], int] = apriori_main_memory(data=sample, t=t*p)
+
+    # if f is true, perform an extra pass over the data and remove false positives
+    if f:
+        # keep a dictionary of true counts
+        counts: dict[frozenset[str], int] = {}
+
+        # iterate over the original file and count
+        with open(file_path) as file:
+            for i, line in enumerate(file):
+                parsed_row: set[str] = set(line.split())
+
+                # check for each candidate in the row and update the counters
+                for candidate in output.keys():
+                    if candidate.issubset(parsed_row):
+                        if candidate not in counts.keys():
+                            counts[candidate] = 1
+                        else:
+                            counts[candidate] += 1
+
+        # and then filter the output such that the non-frequent ones are discarded
+        for key in list(counts):
+            if counts[key] < t: 
+                del output[key]
+
+    return output
 
 def apriori_main_memory(data: list[str], t: int) -> dict[frozenset[str], int]:
     """Execute the apriori algorithm on a list of strings where each string represents a basket IN MEMORY.

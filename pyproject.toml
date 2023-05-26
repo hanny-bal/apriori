@@ -1,0 +1,14 @@
+[project]
+name = "apriori-implementation"
+version = "1.0.0"
+authors = [
+    {name = "David Hanny", email = "david.hanny@stud.sbg.ac.at"},
+]
+description = "Implementation of (randomized) Apriori for frequent item set mining."
+readme = "README.md"
+requires-python = ">=3.9"
+dependencies = [
+    "numpy",
+    "matplotlib",
+    "tqdm"
+]

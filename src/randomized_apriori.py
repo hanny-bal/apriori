@@ -2,7 +2,7 @@
 """
 import random
 
-def randomized_apriori(file_path: str, t: int, p: float, f: bool) -> dict[frozenset[str], int]:
+def randomized_apriori(file_path: str, t: int, p: float, f: bool, alpha: float = 1) -> dict[frozenset[str], int]:
     """Execute randomized apriori on the specified file using a frequency threshold t.
 
     Args:
@@ -10,6 +10,7 @@ def randomized_apriori(file_path: str, t: int, p: float, f: bool) -> dict[frozen
         t (int): Frequency threshold t, item sets with a lower freq will be discarded.
         p (float): Sampling probability for each line of data.
         f (bool): If true, an extra pass over the data is performed to remove false positives.
+        alpha (float): Multiplicative parameter for the sample threshold, can be <1 to reduce false negatives.
 
     Returns:
         dict[frozenset[str], int]: A dictionary that has the frequent item sets as keys 
@@ -17,7 +18,7 @@ def randomized_apriori(file_path: str, t: int, p: float, f: bool) -> dict[frozen
     """
     # First, we create a sample of the data set: That is, we read the data set once, sample each basket with probability p
     # and append it to a list stored in main memory.
-    sample: list[str] = 0
+    sample: list[str] = []
 
     with open(file_path) as file:
         for i, line in enumerate(file):
@@ -25,7 +26,7 @@ def randomized_apriori(file_path: str, t: int, p: float, f: bool) -> dict[frozen
                 sample.append(line)
 
     # now run apriori on the sample
-    output: dict[frozenset[str], int] = apriori_main_memory(data=sample, t=t*p)
+    output: dict[frozenset[str], int] = apriori_main_memory(data=sample, t=(t*p*alpha))
 
     # if f is true, perform an extra pass over the data and remove false positives
     if f:
